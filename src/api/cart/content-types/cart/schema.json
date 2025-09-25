@@ -17,18 +17,13 @@
     "Price": {
       "type": "biginteger"
     },
-    "Image": {
-      "type": "media",
-      "multiple": false,
-      "allowedTypes": [
-        "images",
-        "files",
-        "videos",
-        "audios"
-      ]
-    },
     "Quantity": {
-      "type": "integer"
+      "type": "integer",
+      "min": 1,
+      "max": 10
+    },
+    "Image": {
+      "type": "string"
     }
   }
 }
