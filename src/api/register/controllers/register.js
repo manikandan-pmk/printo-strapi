@@ -1,8 +1,5 @@
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const { Resend } = require("resend");
-
-const resend = new Resend(process.env.RESEND_API_KEY);
 
 module.exports = {
   async register(ctx) {
@@ -40,14 +37,8 @@ module.exports = {
           Username,
           Email,
           Password: hashPassword,
+          publishedAt: new Date(), // publish immediately
         },
-      });
-
-      await resend.emails.send({
-        from: "Acme <onboarding@resend.dev>", // testing only
-        to: Email,
-        subject: "Registration Successful",
-        html: `<p>Hello ${Username},</p><p>Your registration was successful!</p>`,
       });
 
       const token = jwt.sign(
@@ -57,15 +48,33 @@ module.exports = {
       );
 
       return ctx.send({
-        message: "User registered successfully And Email Sent",
+        message: "User registered successfully",
         user: { id: user.id, Username: user.Username, Email: user.Email },
         jwt: token,
       });
     } catch (err) {
       console.error("Register Error:", err);
-      return ctx.internalServerError(
-        "Something went wrong during registration"
-      );
+      return ctx.internalServerError(err.message);
     }
+  },
+
+  async find(ctx) {
+    const users = await strapi.db.query("api::register.register").findMany();
+    return ctx.send({ data: users });
+  },
+
+  async delete(ctx) {
+    const { id } = ctx.params;
+    let deleted;
+
+    if (id) {
+      deleted = await strapi.db.query("api::register.register").delete({
+        where: { id: parseInt(id) },
+      });
+    } else {
+      deleted = await strapi.db.query("api::register.register").deleteMany({});
+    }
+
+    return ctx.send({ data: deleted });
   },
 };
