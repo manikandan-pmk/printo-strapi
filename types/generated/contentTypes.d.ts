@@ -440,6 +440,33 @@ export interface ApiCategoryCategory extends Struct.CollectionTypeSchema {
   };
 }
 
+export interface ApiLoginLogin extends Struct.CollectionTypeSchema {
+  collectionName: 'logins';
+  info: {
+    displayName: 'Login';
+    pluralName: 'logins';
+    singularName: 'login';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    Email: Schema.Attribute.Email;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<'oneToMany', 'api::login.login'> &
+      Schema.Attribute.Private;
+    Password: Schema.Attribute.Password;
+    publishedAt: Schema.Attribute.DateTime;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    Username: Schema.Attribute.String;
+  };
+}
+
 export interface ApiProductProduct extends Struct.CollectionTypeSchema {
   collectionName: 'products';
   info: {
@@ -471,6 +498,37 @@ export interface ApiProductProduct extends Struct.CollectionTypeSchema {
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
+  };
+}
+
+export interface ApiRegisterRegister extends Struct.CollectionTypeSchema {
+  collectionName: 'registers';
+  info: {
+    displayName: 'Register';
+    pluralName: 'registers';
+    singularName: 'register';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    Email: Schema.Attribute.Email;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::register.register'
+    > &
+      Schema.Attribute.Private;
+    Password: Schema.Attribute.Password;
+    publishedAt: Schema.Attribute.DateTime;
+    RePassword: Schema.Attribute.Email;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    Username: Schema.Attribute.String;
   };
 }
 
@@ -985,7 +1043,9 @@ declare module '@strapi/strapi' {
       'admin::user': AdminUser;
       'api::cart.cart': ApiCartCart;
       'api::category.category': ApiCategoryCategory;
+      'api::login.login': ApiLoginLogin;
       'api::product.product': ApiProductProduct;
+      'api::register.register': ApiRegisterRegister;
       'plugin::content-releases.release': PluginContentReleasesRelease;
       'plugin::content-releases.release-action': PluginContentReleasesReleaseAction;
       'plugin::i18n.locale': PluginI18NLocale;
