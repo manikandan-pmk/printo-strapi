@@ -524,7 +524,7 @@ export interface ApiRegisterRegister extends Struct.CollectionTypeSchema {
       Schema.Attribute.Private;
     Password: Schema.Attribute.Password;
     publishedAt: Schema.Attribute.DateTime;
-    RePassword: Schema.Attribute.Email;
+    RePassword: Schema.Attribute.Password;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
