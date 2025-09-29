@@ -1,9 +1,10 @@
-'use strict';
-
-/**
- * register router
- */
-
-const { createCoreRouter } = require('@strapi/strapi').factories;
-
-module.exports = createCoreRouter('api::register.register');
+module.exports = {
+  routes: [
+    {
+      method: "POST",
+      path: "/registers",                    
+      handler: "register.register",  
+      config: { auth: false },
+    },
+  ],
+};
