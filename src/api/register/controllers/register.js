@@ -1,11 +1,15 @@
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const { Resend } = require("resend");
+
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 module.exports = {
   async register(ctx) {
     try {
       const { Username, Email, Password, RePassword } = ctx.request.body;
 
+      // 1. Validate fields
       if (!Username || !Email || !Password || !RePassword) {
         return ctx.badRequest("All fields required");
       }
@@ -14,6 +18,7 @@ module.exports = {
         return ctx.badRequest("Passwords do not match");
       }
 
+      // 2. Check duplicates
       const checkEmailUser = await strapi.db
         .query("api::register.register")
         .findOne({ where: { Email } });
@@ -27,34 +32,55 @@ module.exports = {
         .findOne({ where: { Username } });
 
       if (checkUsername) {
-        return ctx.badRequest("Username already Registered");
+        return ctx.badRequest("Username already registered");
       }
 
+      // 3. Hash password
       const hashPassword = await bcrypt.hash(Password, 10);
 
+      // 4. Save user
       const user = await strapi.db.query("api::register.register").create({
         data: {
           Username,
           Email,
           Password: hashPassword,
-          publishedAt: new Date(), // publish immediately
+          publishedAt: new Date(), // auto publish
         },
       });
 
+      // 5. Try sending email (non-blocking)
+      try {
+        await resend.emails.send({
+          from: "Acme <onboarding@resend.dev>", // sandbox sender
+          to: Email,
+          subject: "Registration Successful",
+          html: `<p>Hello ${Username},</p><p>Your registration was successful!</p>`,
+        });
+        console.log("✅ Email sent to", Email);
+      } catch (emailError) {
+        console.error("❌ Email sending failed:", emailError);
+      }
+
+      // 6. Generate JWT
       const token = jwt.sign(
         { id: user.id, email: user.Email },
         process.env.JWT_SECRET || "super-secret-key",
         { expiresIn: "7d" }
       );
 
+      // 7. Return response
       return ctx.send({
         message: "User registered successfully",
-        user: { id: user.id, Username: user.Username, Email: user.Email },
+        user: {
+          id: user.id,
+          Username: user.Username,
+          Email: user.Email,
+        },
         jwt: token,
       });
     } catch (err) {
       console.error("Register Error:", err);
-      return ctx.internalServerError(err.message);
+      return ctx.internalServerError("Something went wrong during registration");
     }
   },
 
