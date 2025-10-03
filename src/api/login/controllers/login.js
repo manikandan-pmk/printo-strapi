@@ -1,6 +1,7 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-
+import { Resend } from "resend";
+const resend = new Resend(process.env.RESEND_API_KEY);
 export default {
   async login(ctx) {
     try {
@@ -93,5 +94,31 @@ export default {
     }
 
     return ctx.send({ data: deleted });
+  },
+  async logout(ctx) {
+    try {
+      const { jwt, Email, Username } = ctx.request.body;
+
+      if (!jwt) {
+        return ctx.badRequest("No Token is Provided");
+      }
+
+      const deleted = await strapi.db
+        .query("api::login.login")
+        .delete({ where: { jwt } });
+
+      if (!deleted) {
+        return ctx.notFound("Token not Found or already logged out");
+      }
+      await resend.emails.send({
+        from: "Acme <onboarding@resend.dev>",
+        to: deleted.Email,
+        subject: "Logout Notification",
+        html: `<p>Hello ${deleted.Username},</p><p>Your Logout was successful!</p>`,
+      });
+      return ctx.send({ message: "Logout Sucessfull" });
+    } catch (err) {
+      return ctx.internalServerError(err.message);
+    }
   },
 };

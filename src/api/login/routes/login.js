@@ -18,5 +18,11 @@ module.exports = {
       handler: "login.delete",
       config: { auth: false },
     },
+    {
+      method: "POST",
+      path:"/logout",
+      handler:"login.logout",
+      config:{auth : false}
+    }
   ]
 };

@@ -137,7 +137,7 @@ module.exports = {
         },
       });
 
-      const resetLink = `https://yourfrontend.com/reset-password?token=${token}`;
+      const resetLink = `http://localhost:5173/forgot-password?token=${token}`;
 
       // Send reset email
       await resend.emails.send({
