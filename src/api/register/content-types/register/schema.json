@@ -12,16 +12,25 @@
   "pluginOptions": {},
   "attributes": {
     "Username": {
-      "type": "string"
+      "type": "string",
+      "required": true
     },
     "Email": {
-      "type": "email"
+      "type": "email",
+      "required": true,
+      "unique": true
     },
     "Password": {
-      "type": "password"
+      "type": "password",
+      "required": true
     },
-    "RePassword": {
-      "type": "password"
+    "resetPasswordToken": {
+      "type": "string",
+      "private": true
+    },
+    "resetPasswordExpiry": {
+      "type": "datetime",
+      "private": true
     }
   }
 }

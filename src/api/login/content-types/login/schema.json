@@ -19,6 +19,9 @@
     },
     "Password": {
       "type": "password"
+    },
+    "jwt": {
+      "type": "text"
     }
   }
 }

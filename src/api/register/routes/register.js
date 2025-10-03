@@ -18,5 +18,17 @@ module.exports = {
       handler: "register.delete",
       config: { auth: false },
     },
+    {
+      method: "POST",
+      path: "/forgotpassword",
+      handler: "register.forgotpassword",
+      config: { auth: false },
+    },
+    {
+      method: "PUT",
+      path: "/resetpassword",
+      handler: "register.resetpassword",
+      config: { auth: false },
+    }
   ],
 };

@@ -455,6 +455,7 @@ export interface ApiLoginLogin extends Struct.CollectionTypeSchema {
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
     Email: Schema.Attribute.Email;
+    jwt: Schema.Attribute.Text;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<'oneToMany', 'api::login.login'> &
       Schema.Attribute.Private;
@@ -515,20 +516,23 @@ export interface ApiRegisterRegister extends Struct.CollectionTypeSchema {
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
-    Email: Schema.Attribute.Email;
+    Email: Schema.Attribute.Email &
+      Schema.Attribute.Required &
+      Schema.Attribute.Unique;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
       'oneToMany',
       'api::register.register'
     > &
       Schema.Attribute.Private;
-    Password: Schema.Attribute.Password;
+    Password: Schema.Attribute.Password & Schema.Attribute.Required;
     publishedAt: Schema.Attribute.DateTime;
-    RePassword: Schema.Attribute.Password;
+    resetPasswordExpiry: Schema.Attribute.DateTime & Schema.Attribute.Private;
+    resetPasswordToken: Schema.Attribute.String & Schema.Attribute.Private;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
-    Username: Schema.Attribute.String;
+    Username: Schema.Attribute.String & Schema.Attribute.Required;
   };
 }
 
