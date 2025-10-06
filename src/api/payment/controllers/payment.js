@@ -18,11 +18,11 @@ export default {
         line_items: [
           {
             price_data: {
-              currency: "usd",
+              currency: "inr",
               product_data: {
-                name: "Test Payment",
+                name: "Printo Payment",
               },
-              unit_amount: amount, // amount in cents
+              unit_amount: amount*100, // amount in cents
             },
             quantity: 1,
           },
