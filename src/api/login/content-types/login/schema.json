@@ -22,6 +22,12 @@
     },
     "jwt": {
       "type": "text"
+    },
+    "carts": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::cart.cart",
+      "mappedBy": "login"
     }
   }
 }

@@ -422,6 +422,7 @@ export interface ApiCartCart extends Struct.CollectionTypeSchema {
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<'oneToMany', 'api::cart.cart'> &
       Schema.Attribute.Private;
+    login: Schema.Attribute.Relation<'manyToOne', 'api::login.login'>;
     Price: Schema.Attribute.BigInteger;
     publishedAt: Schema.Attribute.DateTime;
     Quantity: Schema.Attribute.Integer &
@@ -482,6 +483,7 @@ export interface ApiLoginLogin extends Struct.CollectionTypeSchema {
     draftAndPublish: true;
   };
   attributes: {
+    carts: Schema.Attribute.Relation<'oneToMany', 'api::cart.cart'>;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;

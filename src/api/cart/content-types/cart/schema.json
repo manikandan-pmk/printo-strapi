@@ -24,6 +24,12 @@
     },
     "Image": {
       "type": "string"
+    },
+    "login": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::login.login",
+      "inversedBy": "carts"
     }
   }
 }
