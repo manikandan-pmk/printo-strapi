@@ -1,45 +1,46 @@
 {
   "kind": "collectionType",
-  "collectionName": "payments",
+  "collectionName": "orders",
   "info": {
-    "singularName": "payment",
-    "pluralName": "payments",
-    "displayName": "Payment"
+    "singularName": "order",
+    "pluralName": "orders",
+    "displayName": "Order"
   },
   "options": {
     "draftAndPublish": true
   },
   "pluginOptions": {},
   "attributes": {
-    "amount": {
-      "type": "biginteger",
-      "min": "100"
-    },
-    "payment_id": {
+    "Title": {
       "type": "string"
     },
-    "order_id": {
+    "Price": {
+      "type": "biginteger"
+    },
+    "Quantity": {
+      "type": "integer"
+    },
+    "Image": {
       "type": "string"
     },
-    "condition": {
+    "Condition": {
       "type": "enumeration",
       "enum": [
-        "created ",
         "paid",
-        "failed"
+        "pending"
       ]
     },
     "login": {
       "type": "relation",
       "relation": "manyToOne",
       "target": "api::login.login",
-      "inversedBy": "payments"
+      "inversedBy": "orders"
     },
-    "order": {
+    "payment": {
       "type": "relation",
       "relation": "oneToOne",
-      "target": "api::order.order",
-      "mappedBy": "payment"
+      "target": "api::payment.payment",
+      "inversedBy": "order"
     }
   }
 }

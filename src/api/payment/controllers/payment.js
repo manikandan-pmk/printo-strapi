@@ -1,67 +1,107 @@
-import Stripe from "stripe";
-
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+import Razorpay from "razorpay";
+import jwt from "jsonwebtoken";
 
 export default {
-  // 🔹 Create a new payment
-  async payment(ctx) {
+  async createPaymentPage(ctx) {
     try {
-      const { amount } = ctx.request.body;
+      // 🧠 Extract JWT token from headers
+      const authHeader = ctx.request.header.authorization;
 
-      if (!amount) {
-        return ctx.badRequest("Amount is required");
+      if (!authHeader) {
+        return ctx.unauthorized("No token provided");
       }
 
-      // 1️⃣ Create Stripe Checkout session
-      const session = await stripe.checkout.sessions.create({
-        payment_method_types: ["card"],
-        line_items: [
-          {
-            price_data: {
-              currency: "inr",
-              product_data: {
-                name: "Printo Payment",
-              },
-              unit_amount: amount*100, // amount in cents
-            },
-            quantity: 1,
-          },
-        ],
-        mode: "payment",
-        success_url: "http://localhost:5173/success",
-        cancel_url: "http://localhost:5173/cancel",
+      const token = authHeader.split(" ")[1]; // "Bearer <token>"
+
+      // ✅ Verify the token
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      // @ts-ignore
+      const userId = decoded.id; // assuming token contains { id, email, ... }
+
+      if (!userId) {
+        return ctx.unauthorized("Invalid user token");
+      }
+
+      // 🧾 Get payment amount
+      const { amount } = ctx.request.body;
+      if (!amount) return ctx.badRequest("Amount is required");
+
+      // 💳 Initialize Razorpay
+      const razorpay = new Razorpay({
+        key_id: process.env.RAZORPAY_KEY_ID,
+        key_secret: process.env.RAZORPAY_KEY_SECRET,
       });
 
-      // 2️⃣ Get creation time (convert from UNIX to readable)
-      const createdAt = new Date(session.created * 1000);
-
-      // 3️⃣ Save payment info in Strapi DB
-      await strapi.db.query("api::payment.payment").create({
-        data: {
-          amount,
-          Created: createdAt,
+      // Step 1: Create Razorpay order
+      const order = await razorpay.orders.create({
+        amount: amount * 100, // in paise
+        currency: "INR",
+        receipt: `receipt_${Date.now()}`,
+        notes: {
+          userId, // attach user ID in metadata
         },
       });
 
-      // 4️⃣ Send session URL back to frontend
+      // Step 2: Create Razorpay Payment Link
+
+      const paymentLink = await razorpay.paymentLink.create({
+        amount: amount * 100,
+        currency: "INR",
+        accept_partial: false,
+        reference_id: order.id,
+        description: `Payment by User ${userId}`,
+        notify: {
+          sms: true,
+          email: true,
+        },
+        reminder_enable: true,
+        callback_url: "http://localhost:1337/api/payment/verify",
+        callback_method: "get",
+      });
+
       return ctx.send({
-        url: session.url,
-        created: createdAt,
-        message: "Payment Created Successfully",
+        success: true,
+        message: "Payment link created successfully",
+        userId,
+        orderId: order.id,
+        paymentLink: paymentLink.short_url,
       });
     } catch (err) {
-      console.error("Stripe Error:", err.message);
-      return ctx.internalServerError(err.message);
+      console.error("🧨 Razorpay Error:", err);
+      if (err.name === "JsonWebTokenError") {
+        return ctx.unauthorized("Invalid or expired token");
+      }
+      return ctx.internalServerError(
+        err.message || "Error creating payment page"
+      );
     }
   },
-
-  // 🔹 Get all payments
-  async get(ctx) {
+  async find(ctx) {
     try {
-      const payments = await strapi.db.query("api::payment.payment").findMany();
-      return ctx.send({ data: payments });
+      const authHeader = ctx.request.header.authorization;
+
+      if (!authHeader) {
+        return ctx.unauthorized("No token provided");
+      }
+
+      const token = authHeader.split(" ")[1]; // "Bearer <token>"
+
+      // ✅ Verify the token
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      // @ts-ignore
+      const userId = decoded.id; // token should contain { id, email, ... }
+
+      if (!userId) {
+        return ctx.unauthorized("Invalid user token");
+      }
+
+      // Fetch payments belonging to this user
+      const payments = await strapi.db.query("api::payment.payment").findMany({
+        where: { login: userId }, // assuming 'login' relation holds user
+      });
+
+      return ctx.send({ payments });
     } catch (err) {
-      console.error("Error fetching payments:", err);
       return ctx.internalServerError(err.message);
     }
   },

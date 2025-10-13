@@ -28,6 +28,18 @@
       "relation": "oneToMany",
       "target": "api::cart.cart",
       "mappedBy": "login"
+    },
+    "payments": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::payment.payment",
+      "mappedBy": "login"
+    },
+    "orders": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::order.order",
+      "mappedBy": "login"
     }
   }
 }
