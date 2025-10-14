@@ -24,7 +24,7 @@
     "condition": {
       "type": "enumeration",
       "enum": [
-        "created ",
+        "created",
         "paid",
         "failed"
       ]
@@ -35,11 +35,16 @@
       "target": "api::login.login",
       "inversedBy": "payments"
     },
-    "order": {
+    "orders": {
       "type": "relation",
-      "relation": "oneToOne",
+      "relation": "oneToMany",
       "target": "api::order.order",
       "mappedBy": "payment"
+    },
+    "cart": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::cart.cart"
     }
   }
 }

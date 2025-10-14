@@ -1,9 +1,25 @@
-'use strict';
-
-/**
- * order router
- */
-
-const { createCoreRouter } = require('@strapi/strapi').factories;
-
-module.exports = createCoreRouter('api::order.order');
+export default {
+    routes : [{
+        method : "GET",
+        path : "/order",
+        handler : "order.find",
+        config : {auth :false}
+    },
+    {
+        method : "PUT",
+        path: "/order/cancel/:id",
+        handler : "order.cancel",
+        config : {
+            auth : false
+        }
+    },
+    {
+        method : "DELETE",
+        path : "/order/:id?",
+        handler : "order.delete",
+        config : {
+            auth : false
+        }
+    }
+]
+}

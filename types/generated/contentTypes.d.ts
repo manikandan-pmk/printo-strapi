@@ -523,7 +523,7 @@ export interface ApiOrderOrder extends Struct.CollectionTypeSchema {
     localizations: Schema.Attribute.Relation<'oneToMany', 'api::order.order'> &
       Schema.Attribute.Private;
     login: Schema.Attribute.Relation<'manyToOne', 'api::login.login'>;
-    payment: Schema.Attribute.Relation<'oneToOne', 'api::payment.payment'>;
+    payment: Schema.Attribute.Relation<'manyToOne', 'api::payment.payment'>;
     Price: Schema.Attribute.BigInteger;
     publishedAt: Schema.Attribute.DateTime;
     Quantity: Schema.Attribute.Integer;
@@ -552,7 +552,8 @@ export interface ApiPaymentPayment extends Struct.CollectionTypeSchema {
         },
         string
       >;
-    condition: Schema.Attribute.Enumeration<['created ', 'paid', 'failed']>;
+    cart: Schema.Attribute.Relation<'oneToOne', 'api::cart.cart'>;
+    condition: Schema.Attribute.Enumeration<['created', 'paid', 'failed']>;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -563,8 +564,8 @@ export interface ApiPaymentPayment extends Struct.CollectionTypeSchema {
     > &
       Schema.Attribute.Private;
     login: Schema.Attribute.Relation<'manyToOne', 'api::login.login'>;
-    order: Schema.Attribute.Relation<'oneToOne', 'api::order.order'>;
     order_id: Schema.Attribute.String;
+    orders: Schema.Attribute.Relation<'oneToMany', 'api::order.order'>;
     payment_id: Schema.Attribute.String;
     publishedAt: Schema.Attribute.DateTime;
     updatedAt: Schema.Attribute.DateTime;
