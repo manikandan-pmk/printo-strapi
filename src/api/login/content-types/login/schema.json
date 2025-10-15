@@ -40,6 +40,12 @@
       "relation": "oneToMany",
       "target": "api::order.order",
       "mappedBy": "login"
+    },
+    "user_details": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::user-detail.user-detail",
+      "mappedBy": "login"
     }
   }
 }

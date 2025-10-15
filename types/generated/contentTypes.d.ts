@@ -499,6 +499,10 @@ export interface ApiLoginLogin extends Struct.CollectionTypeSchema {
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
+    user_details: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::user-detail.user-detail'
+    >;
     Username: Schema.Attribute.String;
   };
 }
@@ -639,6 +643,44 @@ export interface ApiRegisterRegister extends Struct.CollectionTypeSchema {
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
     Username: Schema.Attribute.String & Schema.Attribute.Required;
+  };
+}
+
+export interface ApiUserDetailUserDetail extends Struct.CollectionTypeSchema {
+  collectionName: 'user_details';
+  info: {
+    displayName: 'UserDetail';
+    pluralName: 'user-details';
+    singularName: 'user-detail';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    Address_line_1: Schema.Attribute.String;
+    Address_line_2: Schema.Attribute.String;
+    City: Schema.Attribute.String;
+    Country: Schema.Attribute.String;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    Email: Schema.Attribute.Email;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::user-detail.user-detail'
+    > &
+      Schema.Attribute.Private;
+    login: Schema.Attribute.Relation<'manyToOne', 'api::login.login'>;
+    MobileNumber: Schema.Attribute.BigInteger;
+    Name: Schema.Attribute.String;
+    Postal_code: Schema.Attribute.String;
+    publishedAt: Schema.Attribute.DateTime;
+    State: Schema.Attribute.String;
+    type: Schema.Attribute.Enumeration<['Home', 'Office', 'Other']>;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
   };
 }
 
@@ -1159,6 +1201,7 @@ declare module '@strapi/strapi' {
       'api::payment.payment': ApiPaymentPayment;
       'api::product.product': ApiProductProduct;
       'api::register.register': ApiRegisterRegister;
+      'api::user-detail.user-detail': ApiUserDetailUserDetail;
       'plugin::content-releases.release': PluginContentReleasesRelease;
       'plugin::content-releases.release-action': PluginContentReleasesReleaseAction;
       'plugin::i18n.locale': PluginI18NLocale;

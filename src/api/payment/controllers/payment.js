@@ -51,7 +51,7 @@ export default {
         description: `Payment for all cart items by user ${userId}`,
         notify: { sms: true, email: true },
         reminder_enable: true,
-        callback_url: "http://localhost:1337/api/payment/verify",
+        callback_url: "http://localhost:5173/success",
         callback_method: "get",
       });
 

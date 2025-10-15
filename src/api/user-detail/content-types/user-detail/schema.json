@@ -1,0 +1,56 @@
+{
+  "kind": "collectionType",
+  "collectionName": "user_details",
+  "info": {
+    "singularName": "user-detail",
+    "pluralName": "user-details",
+    "displayName": "UserDetail"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "Name": {
+      "type": "string"
+    },
+    "MobileNumber": {
+      "type": "biginteger"
+    },
+    "Email": {
+      "type": "email"
+    },
+    "Country": {
+      "type": "string"
+    },
+    "Address_line_1": {
+      "type": "string"
+    },
+    "Address_line_2": {
+      "type": "string"
+    },
+    "City": {
+      "type": "string"
+    },
+    "State": {
+      "type": "string"
+    },
+    "Postal_code": {
+      "type": "string"
+    },
+    "type": {
+      "type": "enumeration",
+      "enum": [
+        "Home",
+        "Office",
+        "Other"
+      ]
+    },
+    "login": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::login.login",
+      "inversedBy": "user_details"
+    }
+  }
+}
