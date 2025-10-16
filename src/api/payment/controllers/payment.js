@@ -1,5 +1,11 @@
 import Razorpay from "razorpay";
 import jwt from "jsonwebtoken";
+import path from "path";
+import fs from "fs";
+import PDFDocument from "pdfkit";
+import { Resend } from "resend";
+
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 export default {
   // ✅ 1️⃣ Create Razorpay payment for all items in user's cart
@@ -59,7 +65,6 @@ export default {
       const payment = await strapi.db.query("api::payment.payment").create({
         data: {
           amount: totalAmount,
-          payment_id: null,
           order_id: order.id,
           condition: "created",
           login: userId,
@@ -94,18 +99,19 @@ export default {
         !razorpay_payment_link_reference_id ||
         !razorpay_payment_link_status
       ) {
-        return ctx.badRequest("Missing verification parameters");
+        // Safe response on refresh
+        return ctx.send({ success: false, message: "No payment to verify" });
       }
 
-      // Find payment record
       const payment = await strapi.db.query("api::payment.payment").findOne({
         where: { order_id: razorpay_payment_link_reference_id },
         populate: { login: true },
       });
 
       if (!payment) return ctx.notFound("Payment record not found");
+      if (!payment.login)
+        return ctx.internalServerError("Payment user data not found");
 
-      // Update payment record
       const updatedPayment = await strapi.db
         .query("api::payment.payment")
         .update({
@@ -117,14 +123,11 @@ export default {
           },
         });
 
-      // ✅ If payment succeeded, move all user's cart items to orders
       if (razorpay_payment_link_status === "paid") {
         const userId = payment.login.id;
-
-        // Fetch all cart items
-        const cartItems = await strapi.db.query("api::cart.cart").findMany({
-          where: { login: userId },
-        });
+        const cartItems = await strapi.db
+          .query("api::cart.cart")
+          .findMany({ where: { login: userId } });
 
         for (const item of cartItems) {
           await strapi.db.query("api::order.order").create({
@@ -140,10 +143,56 @@ export default {
           });
         }
 
-        // Clear the cart
-        await strapi.db.query("api::cart.cart").deleteMany({
-          where: { login: userId },
-        });
+        // Generate PDF and send email safely
+        try {
+          const invoiceDir = path.join(process.cwd(), "public", "invoices");
+          if (!fs.existsSync(invoiceDir))
+            fs.mkdirSync(invoiceDir, { recursive: true });
+          const filePath = path.join(invoiceDir, `invoice-${payment.id}.pdf`);
+          const doc = new PDFDocument();
+          doc.pipe(fs.createWriteStream(filePath));
+          doc.fontSize(22).text("Invoice", { align: "center" });
+          doc.moveDown();
+          doc.text(`Invoice ID : ${payment.id}`);
+          doc.text(`Order ID: ${payment.order_id}`);
+          doc.text(`Payment ID: ${razorpay_payment_id}`);
+          doc.text(`User: ${payment.login.Username}`);
+          doc.text(`Email: ${payment.login.Email}`);
+          doc.moveDown();
+          doc.text("Items:");
+          cartItems.forEach((item) => {
+            doc.text(
+              `${item.Title} - ₹${item.Price} x ${item.Quantity} = ₹ ${Number(item.Price) * Number(item.Quantity)}`
+            );
+          });
+          const total = cartItems.reduce(
+            (sum, item) => sum + Number(item.Price) * Number(item.Quantity),
+            0
+          );
+          doc.moveDown();
+          doc.fontSize(14).text(`Total: ₹${total}`, { align: "right" });
+          doc.end();
+
+          const fileBuffer = fs.readFileSync(filePath);
+          await resend.emails.send({
+            from: "Acme <onboarding@resend.dev>",
+            to: payment.login.Email,
+            subject: `Invoice for Order #${payment.order_id}`,
+            html: `<h2>Thank you, ${payment.login.Username}!</h2><p>Your payment has been received successfully.</p>`,
+            attachments: [
+              {
+                filename: `invoice-${payment.id}.pdf`,
+                content: fileBuffer.toString("base64"),
+              },
+            ],
+          });
+        } catch (pdfErr) {
+          console.error("Invoice generation/email failed:", pdfErr.message);
+        }
+
+        await strapi.db
+          .query("api::cart.cart")
+          .deleteMany({ where: { login: userId } });
       }
 
       return ctx.send({
